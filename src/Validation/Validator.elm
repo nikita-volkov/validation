@@ -25,6 +25,9 @@ condition predicate error value = if predicate value then [] else [error]
 -- ** Concatenation
 -------------------------
 
+none : Validator error value
+none = always []
+
 {-|
 Concatenate validators, producing a validator,
 which only emits the first error,
