@@ -74,14 +74,14 @@ onStringLength = mapValue String.length
 onMaybeJust : Validator error a -> Validator error (Maybe a)
 onMaybeJust = mapFilterValue identity
 
-onEachArrayElement : Validator error a -> Validator error (Array a)
-onEachArrayElement = onEachListElement >> mapValue Array.toList
+onArrayElement : Validator error a -> Validator error (Array a)
+onArrayElement = onListElement >> mapValue Array.toList
 
-onEachListElement : Validator error a -> Validator error (List a)
-onEachListElement = List.concatMap
+onListElement : Validator error a -> Validator error (List a)
+onListElement = List.concatMap
 
-onEachStringChar : Validator error Char -> Validator error String
-onEachStringChar = onEachListElement >> mapValue String.toList
+onStringChar : Validator error Char -> Validator error String
+onStringChar = onListElement >> mapValue String.toList
 
 
 -- * Generic validators
