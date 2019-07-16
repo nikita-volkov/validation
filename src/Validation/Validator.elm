@@ -107,6 +107,9 @@ isInRange min max =
 isOneOf : List a -> Validator a a
 isOneOf options = condition (\ x -> List.member x options)
 
+equals : a -> Validator a a
+equals expected = condition ((==) expected)
+
 
 -- * Specific validators
 -------------------------
