@@ -17,7 +17,10 @@ mapValue : (b -> a) -> Validator error a -> Validator error b
 mapValue mapping validator value = validator (mapping value)
 
 mapFilterValue : (b -> Maybe a) -> Validator error a -> Validator error b
-mapFilterValue mapping aValidator = mapping >> List.maybe >> List.concatMap aValidator
+mapFilterValue mapping = mapConcatValue (mapping >> List.maybe)
+
+mapConcatValue : (b -> List a) -> Validator error a -> Validator error b
+mapConcatValue mapping aValidator = mapping >> List.concatMap aValidator
 
 condition : (value -> Bool) -> error -> Validator error value
 condition predicate error value = if predicate value then [] else [error]
