@@ -65,6 +65,15 @@ onStringLength = mapValue String.length
 onMaybeJust : Validator error a -> Validator error (Maybe a)
 onMaybeJust = mapFilterValue identity
 
+onEachArrayElement : Validator error a -> Validator error (Array a)
+onEachArrayElement = onEachListElement >> mapValue Array.toList
+
+onEachListElement : Validator error a -> Validator error (List a)
+onEachListElement elementValidator = List.concatMap (\ value -> elementValidator value)
+
+onEachStringChar : Validator error Char -> Validator error String
+onEachStringChar = onEachListElement >> mapValue String.toList
+
 
 -- * Generic validators
 -------------------------
@@ -74,6 +83,14 @@ isAtLeast threshold = condition ((<=) threshold) threshold
 
 isAtMost : comparable -> Validator comparable comparable
 isAtMost threshold = condition ((>=) threshold) threshold
+
+isInRange : comparable -> comparable -> Validator (comparable, comparable) comparable
+isInRange min max =
+  any
+    [
+      mapError (always (min, max)) (isAtLeast min),
+      mapError (always (min, max)) (isAtMost max)
+    ]
 
 isOneOf : List a -> Validator (List a) a
 isOneOf options = condition (\ x -> List.member x options) options
