@@ -3,7 +3,7 @@ module Validation.Validator exposing (..)
 import Array exposing (Array)
 
 
-type alias Validator error value = value -> Result error ()
+type alias Validator error value = value -> Maybe error
 
 
 -- * Utils
@@ -11,23 +11,20 @@ type alias Validator error value = value -> Result error ()
 
 mapError : (a -> b) -> Validator a value -> Validator b value
 mapError mapping validator value =
-  validator value |> Result.mapError mapping
+  validator value |> Maybe.map mapping
 
 mapValue : (b -> a) -> Validator error a -> Validator error b
 mapValue mapping validator value =
   validator (mapping value)
 
 mapFilterValue : (b -> Maybe a) -> Validator error a -> Validator error b
-mapFilterValue mapping aValidator b =
-  case mapping b of
-    Just a -> aValidator a
-    Nothing -> Ok ()
+mapFilterValue mapping aValidator = mapping >> Maybe.andThen aValidator
 
 condition : (value -> Bool) -> error -> Validator error value
 condition predicate error value =
   if predicate value
-    then Ok ()
-    else Err error
+    then Nothing
+    else Just error
 
 
 -- * Value projections
