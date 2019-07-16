@@ -4,6 +4,9 @@ import Array exposing (Array)
 import Validation.Extensions.List as List
 
 
+{-|
+Abstraction over a function, which looks for errors in the value.
+-}
 type alias Validator error value = value -> List error
 
 
