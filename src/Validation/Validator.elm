@@ -22,6 +22,36 @@ mapFilterValue mapping aValidator = mapping >> List.maybe >> List.concatMap aVal
 condition : (value -> Bool) -> error -> Validator error value
 condition predicate error value = if predicate value then [] else [error]
 
+-- ** Concatenation
+-------------------------
+
+{-|
+Concatenate validators, producing a validator,
+which only emits the first error,
+and does not execute the remaining validators,
+when an error is found.
+Thus it is more efficient than `every`,
+so prefer it when you're only interested
+in one error message per validation.
+-}
+any : List (Validator error value) -> Validator error value
+any validators value =
+  let
+    loop remainingValidators = case remainingValidators of
+      validator :: nextValidators -> case validator value of
+        errorsHead :: _ -> [errorsHead]
+        _ -> loop nextValidators
+      _ -> []
+    in loop validators
+
+{-|
+Concatenate validators, gathering the results from all of them.
+-}
+every : List (Validator error value) -> Validator error value
+every validators value =
+  validators |>
+  List.concatMap (\ validator -> validator value)
+
 
 -- * Value projections
 -------------------------
