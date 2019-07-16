@@ -38,6 +38,19 @@ none : Validator error value
 none = always []
 
 {-|
+Combine validators in such a way that it's enough for one of them to be satisfied.
+-}
+any : List (Validator error value) -> Validator error value
+any validators value =
+  let
+    loop errors currentValidators = case currentValidators of
+      validator :: nextValidators -> case validator value of
+        [] -> []
+        newErrors -> loop (newErrors ++ errors) nextValidators
+      _ -> errors
+    in loop [] validators
+
+{-|
 Concatenate validators, producing a validator,
 which only emits the first error,
 and does not execute the remaining validators,
@@ -46,10 +59,10 @@ Thus it is more efficient than `every`,
 so prefer it when you're only interested
 in one error message per validation.
 -}
-any : List (Validator error value) -> Validator error value
-any validators value =
+firstOfEvery : List (Validator error value) -> Validator error value
+firstOfEvery validators value =
   let
-    loop remainingValidators = case remainingValidators of
+    loop currentValidators = case currentValidators of
       validator :: nextValidators -> case validator value of
         errorsHead :: _ -> [errorsHead]
         _ -> loop nextValidators
@@ -59,8 +72,8 @@ any validators value =
 {-|
 Concatenate validators, gathering the results from all of them.
 -}
-every : List (Validator error value) -> Validator error value
-every validators value =
+allOfEvery : List (Validator error value) -> Validator error value
+allOfEvery validators value =
   validators |>
   List.concatMap (\ validator -> validator value)
 
