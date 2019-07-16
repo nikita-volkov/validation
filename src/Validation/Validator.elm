@@ -75,7 +75,7 @@ onEachArrayElement : Validator error a -> Validator error (Array a)
 onEachArrayElement = onEachListElement >> mapValue Array.toList
 
 onEachListElement : Validator error a -> Validator error (List a)
-onEachListElement elementValidator = List.concatMap (\ value -> elementValidator value)
+onEachListElement = List.concatMap
 
 onEachStringChar : Validator error Char -> Validator error String
 onEachStringChar = onEachListElement >> mapValue String.toList
