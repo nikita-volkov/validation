@@ -1,30 +1,26 @@
 module Validation.Validator exposing (..)
 
 import Array exposing (Array)
+import Validation.Extensions.List as List
 
 
-type alias Validator error value = value -> Maybe error
+type alias Validator error value = value -> List error
 
 
 -- * Utils
 -------------------------
 
 mapError : (a -> b) -> Validator a value -> Validator b value
-mapError mapping validator value =
-  validator value |> Maybe.map mapping
+mapError mapping validator value = validator value |> List.map mapping
 
 mapValue : (b -> a) -> Validator error a -> Validator error b
-mapValue mapping validator value =
-  validator (mapping value)
+mapValue mapping validator value = validator (mapping value)
 
 mapFilterValue : (b -> Maybe a) -> Validator error a -> Validator error b
-mapFilterValue mapping aValidator = mapping >> Maybe.andThen aValidator
+mapFilterValue mapping aValidator = mapping >> List.maybe >> List.concatMap aValidator
 
 condition : (value -> Bool) -> error -> Validator error value
-condition predicate error value =
-  if predicate value
-    then Nothing
-    else Just error
+condition predicate error value = if predicate value then [] else [error]
 
 
 -- * Value projections
