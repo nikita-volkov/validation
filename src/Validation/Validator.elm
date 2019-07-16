@@ -25,12 +25,6 @@ mapFilterValue mapping = mapConcatValue (mapping >> List.maybe)
 mapConcatValue : (b -> List a) -> Validator error a -> Validator error b
 mapConcatValue mapping aValidator = mapping >> List.concatMap aValidator
 
-condition : (value -> Bool) -> Validator value value
-condition predicate value = if predicate value then [] else [value]
-
-conditionAndError : (value -> Bool) -> error -> Validator error value
-conditionAndError predicate error value = if predicate value then [] else [error]
-
 -- ** Concatenation
 -------------------------
 
@@ -103,25 +97,28 @@ onStringChar = onListElement >> mapValue String.toList
 -- * Generic validators
 -------------------------
 
+satisfies : (value -> Bool) -> Validator value value
+satisfies predicate value = if predicate value then [] else [value]
+
+equals : a -> Validator a a
+equals expected = satisfies ((==) expected)
+
 isAtLeast : comparable -> Validator comparable comparable
-isAtLeast threshold = condition ((<=) threshold)
+isAtLeast threshold = satisfies ((<=) threshold)
 
 isAtMost : comparable -> Validator comparable comparable
-isAtMost threshold = condition ((>=) threshold)
+isAtMost threshold = satisfies ((>=) threshold)
 
 isInRange : comparable -> comparable -> Validator (comparable, comparable) comparable
 isInRange min max =
-  any
+  firstOfEvery
     [
       mapError (always (min, max)) (isAtLeast min),
       mapError (always (min, max)) (isAtMost max)
     ]
 
 isOneOf : List a -> Validator a a
-isOneOf options = condition (\ x -> List.member x options)
-
-equals : a -> Validator a a
-equals expected = condition ((==) expected)
+isOneOf options = satisfies (\ x -> List.member x options)
 
 
 -- * Specific validators
