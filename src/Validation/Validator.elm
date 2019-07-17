@@ -49,7 +49,7 @@ Concatenate validators, producing a validator,
 which only emits the first error,
 and does not execute the remaining validators,
 when an error is found.
-Thus it is more efficient than `every`,
+Thus it is more efficient than `allOfEvery`,
 so prefer it when you're only interested
 in one error message per validation.
 -}
