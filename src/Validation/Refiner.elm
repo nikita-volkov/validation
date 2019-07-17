@@ -66,6 +66,9 @@ mapInput fn refinerA = fn >> refinerA
 mapOutput : (a -> b) -> Refiner error input a -> Refiner error input b
 mapOutput fn refinerA = refinerA >> Result.map fn
 
+mapError : (a -> b) -> Refiner a input output -> Refiner b input output
+mapError fn refinerA = refinerA >> Result.mapError (List.map fn)
+
 {-|
 Sequentially execute two refiners on the same input.
 -}
