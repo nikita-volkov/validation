@@ -9,6 +9,8 @@ Projection from `input` to `output`,
 where `input` values can be of a broader range and thus fail to produce `output`.
 
 Implemented as a mapping function which can fail and list the errors.
+
+This abstraction can be composed in all sorts of ways: monadically, alternatively, categorically.
 -}
 type alias Refiner error input output = input -> Result (List error) output
 
@@ -30,6 +32,12 @@ validate : Validator error value -> Refiner error value value
 validate validator value = case validator value of
   [] -> Ok value
   errors -> Err errors
+
+identity : Refiner error a a
+identity = Ok
+
+compose : Refiner error b c -> Refiner error a b -> Refiner error a c
+compose bc ab = ab >> Result.andThen bc
 
 {-|
 Lift a mapping function,
@@ -57,3 +65,9 @@ mapInput fn refinerA = fn >> refinerA
 
 mapOutput : (a -> b) -> Refiner error input a -> Refiner error input b
 mapOutput fn refinerA = refinerA >> Result.map fn
+
+{-|
+Sequentially execute two refiners on the same input.
+-}
+andThen : (a -> Refiner error input b) -> Refiner error input a -> Refiner error input b
+andThen fn refinerA input = refinerA input |> Result.andThen (\ a -> fn a input)
