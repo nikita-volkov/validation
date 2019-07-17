@@ -25,23 +25,23 @@ Lift a validator into a refiner,
 which only restricts the domain of an existing value,
 without mapping it into another type.
 -}
-validate : Validator error value -> Refiner error value value
-validate validator value = case validator value of
+validator : Validator error a -> Refiner error a a
+validator x a = case x a of
   error :: _ -> Err error
-  _ -> Ok value
+  _ -> Ok a
+
+{-|
+Lift a mapping function,
+which produces `output` from `input` without errors.
+-}
+mapping : (input -> output) -> Refiner error input output
+mapping fn input = Ok (fn input)
 
 identity : Refiner error a a
 identity = Ok
 
 compose : Refiner error b c -> Refiner error a b -> Refiner error a c
 compose bc ab = ab >> Result.andThen bc
-
-{-|
-Lift a mapping function,
-which produces `output` from `input` without errors.
--}
-map : (input -> output) -> Refiner error input output
-map fn input = Ok (fn input)
 
 mapInput : (b -> a) -> Refiner error a output -> Refiner error b output
 mapInput fn refinerA = fn >> refinerA
