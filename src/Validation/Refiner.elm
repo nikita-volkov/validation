@@ -91,3 +91,8 @@ any error refiners input =
       _ -> Err currentError
     in loop error refiners
 
+optional : (input -> Bool) -> Refiner error input output -> Refiner error input (Maybe output)
+optional isNone refiner input =
+  if input |> isNone
+    then Ok Nothing
+    else mapOutput Just refiner <| input
