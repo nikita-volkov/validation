@@ -16,6 +16,12 @@ type alias Validator error value = value -> List error
 mapError : (a -> b) -> Validator a value -> Validator b value
 mapError mapping validator value = validator value |> List.map mapping
 
+{-|
+Produce a single error when the validator fails.
+-}
+setError : b -> Validator a value -> Validator b value
+setError newError validator = validator >> \ errors -> if List.isEmpty errors then [] else [newError]
+
 mapValue : (b -> a) -> Validator error a -> Validator error b
 mapValue mapping validator value = validator (mapping value)
 
