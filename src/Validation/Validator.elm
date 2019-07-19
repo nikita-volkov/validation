@@ -1,6 +1,7 @@
 module Validation.Validator exposing (..)
 
 import Array exposing (Array)
+import Either exposing (Either(..))
 import Validation.Extensions.List as List
 
 
@@ -115,12 +116,12 @@ isAtLeast threshold = satisfies ((<=) threshold)
 isAtMost : comparable -> Validator comparable comparable
 isAtMost threshold = satisfies ((>=) threshold)
 
-isInRange : comparable -> comparable -> Validator (comparable, comparable) comparable
+isInRange : comparable -> comparable -> Validator (Either comparable comparable) comparable
 isInRange min max =
   firstOfEvery
     [
-      mapError (always (min, max)) (isAtLeast min),
-      mapError (always (min, max)) (isAtMost max)
+      mapError Left (isAtLeast min),
+      mapError Right (isAtMost max)
     ]
 
 isOneOf : List a -> Validator a a
