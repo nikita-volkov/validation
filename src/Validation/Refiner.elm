@@ -2,6 +2,7 @@ module Validation.Refiner exposing (..)
 
 import Array exposing (Array)
 import Validation.Validator as Validator exposing (Validator)
+import Validation.Extensions.Result as Result
 
 
 {-|
@@ -29,6 +30,9 @@ validator : Validator error a -> Refiner error a a
 validator x a = case x a of
   error :: _ -> Err error
   _ -> Ok a
+
+maybe : error -> (a -> Maybe b) -> Refiner error a b
+maybe error maybeFn = maybeFn >> Result.maybe error
 
 {-|
 Lift a mapping function,
