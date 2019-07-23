@@ -100,3 +100,11 @@ optional isNone refiner input =
   if input |> isNone
     then Ok Nothing
     else mapOutput Just refiner <| input
+
+-- * Input projections
+-------------------------
+
+onMaybeJust : Refiner error input output -> Refiner error (Maybe input) (Maybe output)
+onMaybeJust refiner maybeInput = case maybeInput of
+  Just input -> input |> refiner |> Result.map Just
+  Nothing -> Ok Nothing
