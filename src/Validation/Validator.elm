@@ -144,7 +144,5 @@ stringLengthIsAtLeast = isAtLeast >> onStringLength
 stringLengthIsAtMost : Int -> Validator Int String
 stringLengthIsAtMost = isAtMost >> onStringLength
 
-isEmail : Validator String String
-isEmail value = case Email.fromString value of
-  Just _ -> []
-  Nothing -> [value]
+stringSatisfiesEmailSyntax : Validator String String
+stringSatisfiesEmailSyntax = satisfies (Email.fromString >> (/=) Nothing)
