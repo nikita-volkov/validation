@@ -3,6 +3,7 @@ module Validation.Validator exposing (..)
 import Array exposing (Array)
 import Either exposing (Either(..))
 import Validation.Extensions.List as List
+import Email
 
 
 {-|
@@ -142,3 +143,8 @@ stringLengthIsAtLeast = isAtLeast >> onStringLength
 
 stringLengthIsAtMost : Int -> Validator Int String
 stringLengthIsAtMost = isAtMost >> onStringLength
+
+isEmail : Validator String String
+isEmail value = case Email.fromString value of
+  Just _ -> []
+  Nothing -> [value]
