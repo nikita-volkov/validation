@@ -26,7 +26,7 @@ Lift a validator into a refiner,
 which only restricts the domain of an existing value,
 without mapping it into another type.
 -}
-validator : Validator error a -> Refiner error a a
+validator : Validator a error -> Refiner error a a
 validator x a = case x a of
   error :: _ -> Err error
   _ -> Ok a

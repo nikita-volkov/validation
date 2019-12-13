@@ -9,40 +9,40 @@ import Email
 {-|
 Abstraction over a function, which looks for errors in the value.
 -}
-type alias Validator error value = value -> List error
+type alias Validator value error = value -> List error
 
 
 -- * Utils
 -------------------------
 
-mapError : (a -> b) -> Validator a value -> Validator b value
+mapError : (a -> b) -> Validator value a -> Validator value b
 mapError mapping validator value = validator value |> List.map mapping
 
 {-|
 Produce a single error when the validator fails.
 -}
-setError : b -> Validator a value -> Validator b value
+setError : b -> Validator value a -> Validator value b
 setError newError validator = validator >> \ errors -> if List.isEmpty errors then [] else [newError]
 
-mapValue : (b -> a) -> Validator error a -> Validator error b
+mapValue : (b -> a) -> Validator a error -> Validator b error
 mapValue mapping validator value = validator (mapping value)
 
-mapFilterValue : (b -> Maybe a) -> Validator error a -> Validator error b
+mapFilterValue : (b -> Maybe a) -> Validator a error -> Validator b error
 mapFilterValue mapping = mapConcatValue (mapping >> List.maybe)
 
-mapConcatValue : (b -> List a) -> Validator error a -> Validator error b
+mapConcatValue : (b -> List a) -> Validator a error -> Validator b error
 mapConcatValue mapping aValidator = mapping >> List.concatMap aValidator
 
 -- ** Concatenation
 -------------------------
 
-none : Validator error value
+none : Validator value error
 none = always []
 
 {-|
 Combine validators in such a way that it's enough for one of them to be satisfied.
 -}
-any : List (Validator error value) -> Validator error value
+any : List (Validator value error) -> Validator value error
 any validators value =
   let
     loop errors currentValidators = case currentValidators of
@@ -61,7 +61,7 @@ Thus it is more efficient than `allOfEvery`,
 so prefer it when you're only interested
 in one error message per validation.
 -}
-firstOfEvery : List (Validator error value) -> Validator error value
+firstOfEvery : List (Validator value error) -> Validator value error
 firstOfEvery validators value =
   let
     loop currentValidators = case currentValidators of
@@ -74,7 +74,7 @@ firstOfEvery validators value =
 {-|
 Concatenate validators, gathering the results from all of them.
 -}
-allOfEvery : List (Validator error value) -> Validator error value
+allOfEvery : List (Validator value error) -> Validator value error
 allOfEvery validators value =
   validators |>
   List.concatMap (\ validator -> validator value)
@@ -83,22 +83,22 @@ allOfEvery validators value =
 -- * Value projections
 -------------------------
 
-onArrayLength : Validator error Int -> Validator error (Array a)
+onArrayLength : Validator Int error -> Validator (Array a) error
 onArrayLength = mapValue Array.length
 
-onStringLength : Validator error Int -> Validator error String
+onStringLength : Validator Int error -> Validator String error
 onStringLength = mapValue String.length
 
-onMaybeJust : Validator error a -> Validator error (Maybe a)
+onMaybeJust : Validator a error -> Validator (Maybe a) error
 onMaybeJust = mapFilterValue identity
 
-onArrayElement : Validator error a -> Validator error (Array a)
+onArrayElement : Validator a error -> Validator (Array a) error
 onArrayElement = onListElement >> mapValue Array.toList
 
-onListElement : Validator error a -> Validator error (List a)
+onListElement : Validator a error -> Validator (List a) error
 onListElement = List.concatMap
 
-onStringChar : Validator error Char -> Validator error String
+onStringChar : Validator Char error -> Validator String error
 onStringChar = onListElement >> mapValue String.toList
 
 
@@ -117,7 +117,7 @@ isAtLeast threshold = satisfies ((<=) threshold)
 isAtMost : comparable -> Validator comparable comparable
 isAtMost threshold = satisfies ((>=) threshold)
 
-isInRange : comparable -> comparable -> Validator (Either comparable comparable) comparable
+isInRange : comparable -> comparable -> Validator comparable (Either comparable comparable)
 isInRange min max =
   firstOfEvery
     [
@@ -132,16 +132,16 @@ isOneOf options = satisfies (\ x -> List.member x options)
 -- * Specific validators
 -------------------------
 
-arrayLengthIsAtLeast : Int -> Validator Int (Array a)
+arrayLengthIsAtLeast : Int -> Validator (Array a) Int
 arrayLengthIsAtLeast = isAtLeast >> onArrayLength
 
-arrayLengthIsAtMost : Int -> Validator Int (Array a)
+arrayLengthIsAtMost : Int -> Validator (Array a) Int
 arrayLengthIsAtMost = isAtMost >> onArrayLength
 
-stringLengthIsAtLeast : Int -> Validator Int String
+stringLengthIsAtLeast : Int -> Validator String Int
 stringLengthIsAtLeast = isAtLeast >> onStringLength
 
-stringLengthIsAtMost : Int -> Validator Int String
+stringLengthIsAtMost : Int -> Validator String Int
 stringLengthIsAtMost = isAtMost >> onStringLength
 
 stringSatisfiesEmailSyntax : Validator String String
