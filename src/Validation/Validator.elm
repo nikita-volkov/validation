@@ -9,7 +9,7 @@ import Email
 {-|
 Abstraction over a function, which looks for errors in the value.
 -}
-type alias Validator error value = value -> List error
+type alias Validator value error = value -> List error
 
 
 -- * Utils
